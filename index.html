@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neo Snake Arcade - Jogo da Cobrinha Online</title>
+    <meta name="description" content="Jogo da cobrinha arcade moderno e eletrizante, jogável com setinhas do teclado, efeitos sonoros interativos sintetizados e visual cyberpunk neon.">
+    <meta name="keywords" content="jogo da cobrinha, snake game, arcade, jogos retrô, web audio, vercel">
+    <meta name="theme-color" content="#070913">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Neo Snake Arcade - Jogo da Cobrinha">
+    <meta property="og:description" content="Jogue com as setinhas do teclado, combos de pontos, efeitos sonoros sintetizados e visual neon futurista.">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
+</head>
+<body>
+    <main class="game-container">
+        <!-- Header Bar -->
+        <header class="header-bar">
+            <div class="title-group">
+                <span class="title-icon">🐍</span>
+                <h1 class="game-title">NEO SNAKE</h1>
+                <span class="badge-tag">ARCADE</span>
+            </div>
+            <div class="header-actions">
+                <button id="soundToggleBtn" class="icon-btn" title="Ativar/Desativar Efeitos Sonoros (M)" aria-label="Som">🔊</button>
+                <button id="bgmToggleBtn" class="icon-btn" title="Música Synthwave Chiptune" aria-label="Música">🎵 OFF</button>
+                <button id="pauseBtn" class="icon-btn" title="Pausar / Continuar (Espaço ou P)" aria-label="Pausa">⏸</button>
+            </div>
+        </header>
+
+        <!-- Score HUD -->
+        <section class="score-hud" aria-label="Painel de Pontuação">
+            <div class="stat-card">
+                <span class="stat-label">Pontos</span>
+                <span id="currentScore" class="stat-value">0</span>
+            </div>
+            <div class="stat-card gold-border">
+                <span class="stat-label">🏆 Recorde</span>
+                <span id="highScore" class="stat-value">0</span>
+            </div>
+            <div class="stat-card combo-card">
+                <span class="stat-label">Combo</span>
+                <span id="comboMultiplier" class="stat-value">1x</span>
+            </div>
+        </section>
+
+        <!-- Game Canvas Board Area -->
+        <div class="board-wrapper">
+            <canvas id="gameCanvas" width="480" height="480"></canvas>
+            <div class="scanlines"></div>
+
+            <!-- Start Screen Overlay -->
+            <div id="startScreen" class="overlay-screen visible">
+                <h2>NEO SNAKE</h2>
+                <p class="overlay-subtitle">Use as setinhas do teclado para guiar a cobra, comer frutas neon e coletar maçãs douradas!</p>
+
+                <div class="difficulty-group" title="Selecione a Dificuldade">
+                    <button class="diff-btn" data-diff="easy">Fácil</button>
+                    <button class="diff-btn active" data-diff="normal">Normal</button>
+                    <button class="diff-btn" data-diff="hard">Insano</button>
+                </div>
+
+                <button id="startBtn" class="btn-primary">
+                    <span>JOGAR AGORA</span>
+                    <span>▶</span>
+                </button>
+            </div>
+
+            <!-- Pause Screen Overlay -->
+            <div id="pauseScreen" class="overlay-screen">
+                <h2>JOGO PAUSADO</h2>
+                <p class="overlay-subtitle">Tome um fôlego! Pressione Espaço ou o botão abaixo para continuar sua jornada.</p>
+                <button id="resumeBtn" class="btn-primary">
+                    <span>CONTINUAR</span>
+                    <span>▶</span>
+                </button>
+            </div>
+
+            <!-- Game Over Screen Overlay -->
+            <div id="gameOverScreen" class="overlay-screen gameover-screen">
+                <h2>FIM DE JOGO</h2>
+                <div id="newRecordBadge" class="high-score-banner" style="display: none;">
+                    <span>⭐ NOVO RECORDE ALCANÇADO!</span>
+                </div>
+
+                <div class="game-stats-modal">
+                    <div class="modal-stat-row">
+                        <span>Pontuação Final:</span>
+                        <span id="finalScore">0</span>
+                    </div>
+                    <div class="modal-stat-row">
+                        <span>Frutas Coletadas:</span>
+                        <span id="finalFoods">0</span>
+                    </div>
+                    <div class="modal-stat-row">
+                        <span>Maior Combo:</span>
+                        <span id="finalCombo">1x</span>
+                    </div>
+                </div>
+
+                <button id="restartBtn" class="btn-primary">
+                    <span>JOGAR NOVAMENTE</span>
+                    <span>🔄</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive Controls Panel & Arrow Keys Visualizer -->
+        <section class="controls-panel" aria-label="Controles do Jogo">
+            <div class="instructions-guide">
+                <div class="guide-item">
+                    <span class="kbd-badge">⬆ ⬇ ⬅ ➡</span>
+                    <span>ou</span>
+                    <span class="kbd-badge">W A S D</span>
+                    <span>Controlar Cobrinha</span>
+                </div>
+                <div class="guide-item">
+                    <span class="kbd-badge">Espaço</span>
+                    <span>Pausar / Despausar</span>
+                </div>
+                <div class="guide-item">
+                    <span class="kbd-badge">M</span>
+                    <span>Ativar/Desativar Som</span>
+                </div>
+            </div>
+
+            <div class="keyboard-visualizer" aria-label="Teclado Virtual">
+                <div class="key-row">
+                    <button id="keyUp" class="virtual-key" aria-label="Cima">▲</button>
+                </div>
+                <div class="key-row">
+                    <button id="keyLeft" class="virtual-key" aria-label="Esquerda">◄</button>
+                    <button id="keyDown" class="virtual-key" aria-label="Baixo">▼</button>
+                    <button id="keyRight" class="virtual-key" aria-label="Direita">►</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer-bar">
+            <span>Neo Snake Arcade &bull; 100% Web Audio API</span>
+            <div class="vercel-badge">
+                <svg class="vercel-icon" viewBox="0 0 116 100" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M57.5 0L115 100H0L57.5 0z" />
+                </svg>
+                <span>Pronto para Vercel</span>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

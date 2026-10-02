@@ -1,0 +1,13 @@
+{
+  "name": "neo-snake-game",
+  "version": "1.0.0",
+  "description": "Jogo da Cobrinha Arcade Neon com sons interativos e jogável com setinhas do teclado",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": ["snake", "game", "arcade", "web-audio", "vercel"],
+  "author": "Samuel",
+  "license": "MIT"
+}
